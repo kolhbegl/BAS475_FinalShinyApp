@@ -161,6 +161,26 @@ ui <-
                              
                              
                              
+                     ),
+                     
+                     # Fifth tab content
+                     tabItem(tabName = "ETSmodels",
+                             h1("Forecast of Your Choice"),
+                             
+                             hr(),
+                             
+                             radioButtons("forecast_ETStype", 
+                                          label = h3("Which type of forecast do you want to see?"),
+                                          choices = c("Holts", 
+                                                      "Holts/Winters")),
+                             
+                             hr(),
+                             
+                             
+                             plotOutput("forecast_ETS")
+                             
+                             
+                             
                      )
                      
                    )  
