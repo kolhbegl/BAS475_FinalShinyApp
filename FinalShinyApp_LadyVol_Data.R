@@ -40,6 +40,8 @@ ui <-
                                      menuItem("Simple Models", tabName = "SimpleModels", 
                                               icon = icon("chart-line")),
                                      menuItem("Exponential Smoothing", tabName = "ETSmodels", 
+                                              icon = icon("chart-line")),
+                                     menuItem("ARIMA", tabName = "ARIMAmodels", 
                                               icon = icon("chart-line"))
                                    )
                  ),
@@ -83,6 +85,11 @@ ui <-
                                
                                tags$h3("The fifth tab displays your choice in one of two types of Exponential Smoothing forecasts: "),
                                tags$h3("(1) Holts or (2) Holts/Winters"),
+                               
+                               tags$br(),
+                               
+                               tags$h3("The sixth tab displays your choice in one of four types of ARIMA forecasts: "),
+                               tags$h3("ARIMA(2,1,0), ARIMA(0,1,2)(0,1,1), ARIMA(2,1,0)(0,1,1), and (4) Autoselected ARIMA"),
                                
                                tags$br()
                                
@@ -178,6 +185,28 @@ ui <-
                              
                              
                              plotOutput("forecast_ETS")
+                             
+                             
+                             
+                     ),
+                     
+                     # Sixth tab content
+                     tabItem(tabName = "ARIMAmodels",
+                             h1("Forecast of Your Choice"),
+                             
+                             hr(),
+                             
+                             radioButtons("forecast_ARIMAtype", 
+                                          label = h3("Which type of forecast do you want to see?"),
+                                          choices = c("ARIMA(2,1,0)", 
+                                                      "ARIMA(0,1,2)(0,1,1)", 
+                                                      "ARIMA(2,1,0)(0,1,1)", 
+                                                      "Autoselected ARIMA")),
+                             
+                             hr(),
+                             
+                             
+                             plotOutput("forecast_ARIMA")
                              
                              
                              
@@ -351,11 +380,143 @@ server <- function(input, output, session) {
         ggeasy::easy_all_text_color(color = "#22afff")
     }
     
-    
-    
-    
-    
   })
+    
+    output$forecast_ETS <- renderPlot({
+      if(input$forecast_ETStype == "Holts") {
+        interest_fit <- g_trends %>%
+          model(
+            Holts = ETS(Interest ~ error("A") + trend("A") + season("N"))
+          )
+        
+        interest_fc <- interest_fit %>% forecast(h = 15)
+        
+        interest_fc %>%
+          autoplot(g_trends, level = NULL) +
+          autolayer(
+            filter_index(g_trends, "2004 Jan" ~ .),
+            colour = "#ff8200"
+          ) +
+          labs( y = "Interest",
+                title = "Holts Forecast for interest in \"Tennessee Lady Vols\""
+          ) + 
+          guides(colour = guide_legend(title = "Forecast"))+
+          ggeasy::easy_center_title()+
+          ggeasy::easy_all_text_color(color = "#22afff")
+      }
+      else if(input$forecast_ETStype == "Holts/Winters") {
+        interest_fit <- g_trends %>%
+          model(`Holts/Winters` = ETS(Interest ~ error("A") + trend("A") 
+                                      + season("A")))
+        
+        interest_fc <- interest_fit %>% forecast(h = 15)
+        
+        interest_fc %>%
+          autoplot(g_trends, level = NULL) +
+          autolayer(
+            filter_index(g_trends, "2004 Jan" ~ .),
+            colour = "#ff8200"
+          ) +
+          labs( y = "Interest",
+                title = "Holts/Winters Forecast for interest in \"Tennessee Lady Vols\""
+          ) + 
+          guides(colour = guide_legend(title = "Forecast"))+
+          ggeasy::easy_center_title()+
+          ggeasy::easy_all_text_color(color = "#22afff")
+      }
+      
+      
+    })
+    
   
+    output$forecast_ARIMA <- renderPlot({
+      if(input$forecast_ARIMAtype == "ARIMA(2,1,0)") {
+        interest_fit <- g_trends %>%
+          model(arima210 = ARIMA(Interest ~ pdq(2,1,0))
+                )
+        
+        interest_fc <- interest_fit %>% forecast(h = 15)
+        
+        interest_fc %>%
+          autoplot(g_trends, level = NULL) +
+          autolayer(
+            filter_index(g_trends, "2004 Jan" ~ .),
+            colour = "#ff8200"
+          ) +
+          labs( y = "Interest",
+                title = "ARIMA(2,1,0) Forecast for interest in \"Tennessee Lady Vols\""
+          ) + 
+          guides(colour = guide_legend(title = "Forecast"))+
+          ggeasy::easy_center_title()+
+          ggeasy::easy_all_text_color(color = "#22afff")
+      }
+      else if(input$forecast_ARIMAtype == "ARIMA(0,1,2)(0,1,1)") {
+        interest_fit <- g_trends %>%
+          model(
+           ARIMA(Interest ~ pdq(0,1,2)+PDQ(0,1,1))
+          )
+        
+        interest_fc <- interest_fit %>% forecast(h = 15)
+        
+        interest_fc %>%
+          autoplot(g_trends, level = NULL) +
+          autolayer(
+            filter_index(g_trends, "2004 Jan" ~ .),
+            colour = "#ff8200"
+          ) +
+          labs( y = "Interest",
+                title = "ARIMA(0,1,2)(0,1,1) Forecast for interest in \"Tennessee Lady Vols\""
+          ) + 
+          guides(colour = guide_legend(title = "Forecast"))+
+          ggeasy::easy_center_title()+
+          ggeasy::easy_all_text_color(color = "#22afff")
+      }
+      else if(input$forecast_ARIMAtype == "ARIMA(2,1,0)(0,1,1)") {
+        interest_fit <- g_trends %>%
+          model(
+            ARIMA(Interest ~ pdq(2,1,0)+PDQ(0,1,1))
+          )
+        
+        interest_fc <- interest_fit %>% forecast(h = 15)
+        
+        interest_fc %>%
+          autoplot(g_trends, level = NULL) +
+          autolayer(
+            filter_index(g_trends, "2004 Jan" ~ .),
+            colour = "#ff8200"
+          ) +
+          labs( y = "Interest",
+                title = "ARIMA(2,1,0)(0,1,1) Forecast for interest in \"Tennessee Lady Vols\""
+          ) + 
+          guides(colour = guide_legend(title = "Forecast"))+
+          ggeasy::easy_center_title()+
+          ggeasy::easy_all_text_color(color = "#22afff")
+      }
+      
+      else if(input$forecast_ARIMAtype == "Autoselected ARIMA") {
+        interest_fit <- g_trends %>%
+          model(
+            ARIMA(Interest)
+          )
+        
+        interest_fc <- interest_fit %>% forecast(h = 15)
+        
+        interest_fc %>%
+          autoplot(g_trends, level = NULL) +
+          autolayer(
+            filter_index(g_trends, "2004 Jan" ~ .),
+            colour = "#ff8200"
+          ) +
+          labs( y = "Interest",
+                title = "Autoselected ARIMA Forecast for interest in \"Tennessee Lady Vols\""
+          ) + 
+          guides(colour = guide_legend(title = "Forecast"))+
+          ggeasy::easy_center_title()+
+          ggeasy::easy_all_text_color(color = "#22afff")
+      }
+      
+    })
+    
+    
 }
 shinyApp(ui, server)
